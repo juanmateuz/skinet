@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace Infraestructure.Data
 {
+    //Repositorio del producto | conexion a la BD
     public class ProductRepository : IproductRepository
     {
         //Conexion a la base de datos
@@ -26,6 +27,11 @@ namespace Infraestructure.Data
 
         public async Task<Product> GetProductByIdAsync(int id)
         {
+            //var typeId = 1;
+            //var products = _context.Products
+            //    .Where(x => x.ProductTypeId == typeId)
+            //    .Include(x => x.ProductType).ToListAsync();
+
             return await _context.Products
                 .Include(p => p.ProductType)
                 .Include(p => p.ProductBrand)
@@ -36,8 +42,8 @@ namespace Infraestructure.Data
         public async Task<IReadOnlyList<Product>> GetProductsAsync()
         {
             return await _context.Products
-                .Include(p=>p.ProductType)
-                .Include(p=>p.ProductBrand)
+                .Include(p => p.ProductType)
+                .Include(p => p.ProductBrand)
                 .ToListAsync();
         }
 

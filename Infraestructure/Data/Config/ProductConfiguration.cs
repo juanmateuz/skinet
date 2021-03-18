@@ -9,6 +9,7 @@ namespace Infraestructure.Data.Config
     {
         public void Configure(EntityTypeBuilder<Product> builder)
         {
+            //Configuracion atributos => tabla base de datos
             builder.Property(p => p.Id).IsRequired();
             builder.Property(p => p.Name).IsRequired().HasMaxLength(100);
             builder.Property(p => p.Description).IsRequired().HasMaxLength(180);

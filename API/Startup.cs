@@ -1,3 +1,4 @@
+using API.Helpers;
 using Core.Interfaces;
 using Infraestructure.Data;
 using Microsoft.AspNetCore.Builder;
@@ -12,7 +13,7 @@ namespace API
 {
     public class Startup
     {
-        private readonly IConfiguration _config;//1
+        private readonly IConfiguration _config;//1 Configuracion
         public Startup(IConfiguration config)
         {
             _config = config;
@@ -23,9 +24,16 @@ namespace API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            //Interfaz Producto repositorio creado
             services.AddScoped<IproductRepository,ProductRepository>();
+            //Interfaz Repositorio generico Creado
+            services.AddScoped(typeof(IGenericRepository<>), (typeof(GenericRepository<>)));
+            //Auto Mapping
+            services.AddAutoMapper(typeof(MappingProfiles));
             services.AddControllers();
+            //Cadena de conexion
             services.AddDbContext<StoreContext>(x => x.UseSqlite(_config.GetConnectionString("DefaultConnection")));
+            //API Swagger
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "API", Version = "v1" });
@@ -45,6 +53,8 @@ namespace API
             app.UseHttpsRedirection();
 
             app.UseRouting();
+            //usar archivos estaticos para las imagenes
+            app.UseStaticFiles();
 
             app.UseAuthorization();
 
