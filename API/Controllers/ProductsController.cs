@@ -1,8 +1,10 @@
 ﻿using API.Dtos;
+using API.Errors;
 using AutoMapper;
 using Core.Entities;
 using Core.Interfaces;
 using Core.Specifications;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +14,8 @@ namespace API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProductsController : ControllerBase
+    //public class ProductsController : ControllerBase
+    public class ProductsController : BaseApiController // Errores de la api http BaseApiController
     {
         private readonly IMapper _mapper;
         public IGenericRepository<Product> _productRepo { get; }
@@ -57,6 +60,8 @@ namespace API.Controllers
         }
 
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]//especificos en swagger conlos errores
+       [ProducesResponseType(typeof(ApiResponse),StatusCodes.Status404NotFound)]
         public async Task<ActionResult<ProductToReturnDto>> GetProduct(int id)
         {
             //var products = await _productRepo.getByIdAsync(id);
@@ -74,6 +79,11 @@ namespace API.Controllers
             //    ProductBrand=producto.ProductBrand.Name,
             //    ProductType=producto.ProductType.Name
             //};
+
+            //Si no encontramos productos 404= error notfound
+
+            if (producto == null) return NotFound(new ApiResponse(404));
+    
             return _mapper.Map<Product, ProductToReturnDto>(producto);
         }
 
