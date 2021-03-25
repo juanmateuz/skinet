@@ -7,10 +7,12 @@ namespace Core.Specifications
     //Clase donde implementamos la interfaz
     public class BaseSpecification<T> : ISpecification<T>
     {
+        //Constructor
         public BaseSpecification()
         {
         }
 
+        //Constructor parametrizado
         public BaseSpecification(Expression<Func<T, bool>> criteria)
         {
             Criteria = criteria;       
@@ -19,11 +21,41 @@ namespace Core.Specifications
 
         public List<Expression<Func<T, object>>> Includes { get; } = 
             new List<Expression<Func<T, object>>>();
-    
-        //para reemplazar los include
+
+        public Expression<Func<T, object>> OrderBy { get; private set; }
+        
+        public Expression<Func<T, object>> OrderByDescending { get;private set; }
+
+        public int Take { get; private set; }
+
+        public int Skip { get; private set; }
+
+        public bool IsPagingEnabled { get; private set; }
+
+        //Metodo para reemplazar los include
+        //Infraestructure/SpecificationEvaluator
         protected void AddInclude(Expression<Func<T, object>> includeExpression)
         {
             Includes.Add(includeExpression);
         }
+
+        //Metodos order by
+        protected void AddOrderBy(Expression<Func<T, object>> orderByExpression)
+        {
+            OrderBy = orderByExpression;
+        }
+
+        protected void AddOrderByDescending(Expression<Func<T, object>> orderByDescExpression)
+        {
+            OrderByDescending = orderByDescExpression;
+        }
+
+        protected void ApplyPaging(int skip,int take)
+        {
+            Skip = skip;
+            Take = take;
+            IsPagingEnabled = true;
+        }
+
     }
 }

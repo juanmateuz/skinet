@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 namespace API.Dtos
 {
+    //LO que le quiero mostrar al usuario
     public class ProductToReturnDto
     {
         public int Id { get; set; }

@@ -1,5 +1,6 @@
 ﻿using API.Dtos;
 using API.Errors;
+using API.Helpers;
 using AutoMapper;
 using Core.Entities;
 using Core.Interfaces;
@@ -23,10 +24,11 @@ namespace API.Controllers
         public IGenericRepository<ProductType> _productType { get; }
 
         //private readonly IproductRepository _repo;
-        //Llama a la interfaz /Core/Interfaces/IproductRepository        
+        //Llama a la interfaz /Core/Interfaces/IproductRepository
+        //public ProductsController(IProductRepository repo,
         public ProductsController(IGenericRepository<Product> productRepo,
             IGenericRepository<ProductBrand> ProductBrand,//IproductRepository repo
-            IGenericRepository<ProductType> productType,IMapper mapper)
+            IGenericRepository<ProductType> productType, IMapper mapper)
         {
             _productRepo = productRepo;
             _productBrand = ProductBrand;
@@ -37,11 +39,23 @@ namespace API.Controllers
 
         [HttpGet]
         //Task<ActionResult<List<ProductToReturnDto cambio el list para que coincida con el metodo
-        public async Task<ActionResult<IReadOnlyList<ProductToReturnDto>>> GetProducts()
-        {
+        //reemplazamos en paginacion public async Task<ActionResult<IReadOnlyList<ProductToReturnDto>>> GetProducts(
+        public async Task<ActionResult<Pagination<ProductToReturnDto>>> GetProducts(
+           //string sort,int? brandId,int? typeId)// parametros anteriores a paginacion
+            [FromQuery]ProductSpecParams productParams)
+            {
             //var products = await _productRepo.ListAllAsync();
-            var spec = new ProductWithTypesAndBrandsSpecification();
+            //var spec = new ProductWithTypesAndBrandsSpecification(sort, brandId, typeId); // Core/Specification agrega los includes
+            var spec = new ProductWithTypesAndBrandsSpecification(productParams); // Core/Specification agrega los includes
+
+            var countSpec = new ProductWithFiltersForCountSpecification(productParams);
+
+            var totalItems = await _productRepo.CountAsync(countSpec);            
+            
             var products = await _productRepo.ListAsync(spec);
+
+            var data = _mapper
+                .Map<IReadOnlyList<Product>, IReadOnlyList<ProductToReturnDto>>(products);
             // return Ok(products);
             //return products.Select(products => new ProductToReturnDto
             //{
@@ -54,14 +68,14 @@ namespace API.Controllers
             //    ProductType = products.ProductType.Name
             //}).ToList();
             //return Automapping
-            return Ok(_mapper
-                .Map<IReadOnlyList<Product>,IReadOnlyList<ProductToReturnDto>>(products));
+            return Ok(new Pagination<ProductToReturnDto>(productParams.PageIndex,
+                productParams.PageSize,totalItems,data));
 
         }
 
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]//especificos en swagger conlos errores
-       [ProducesResponseType(typeof(ApiResponse),StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         public async Task<ActionResult<ProductToReturnDto>> GetProduct(int id)
         {
             //var products = await _productRepo.getByIdAsync(id);
@@ -83,7 +97,7 @@ namespace API.Controllers
             //Si no encontramos productos 404= error notfound
 
             if (producto == null) return NotFound(new ApiResponse(404));
-    
+
             return _mapper.Map<Product, ProductToReturnDto>(producto);
         }
 
